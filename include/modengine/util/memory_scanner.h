@@ -9,7 +9,6 @@
 #include <exception>
 
 #include <windows.h>
-#include <MINT.h>
 
 namespace modengine {
 
@@ -50,26 +49,10 @@ public:
 
     MemoryScanner(HMODULE base)
     {
-        const auto image = RtlImageNtHeader(base);
-        const auto start = reinterpret_cast<uintptr_t>(base);
-        const auto end = start + image->OptionalHeader.SizeOfImage;
-
-        HANDLE process = GetCurrentProcess();
-        MEMORY_BASIC_INFORMATION info;
-
-        for (uintptr_t next = 0; VirtualQueryEx(process, (void*)next, &info, sizeof(info)) == sizeof(info); next += info.RegionSize) {
-            if (info.State == MEM_COMMIT) {
-                info.BaseAddress = (void*)next;
-
-                if (next >= start && next + info.RegionSize <= end) {
-                    m_memory_regions.push_back(info);
-                }
-            }
-        }
     }
 
     MemoryScanner()
-        : MemoryScanner((HMODULE)NtCurrentPeb()->ImageBaseAddress)
+        : MemoryScanner((HMODULE)NULL)
     {
     }
 
